@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Media Capture Watch — Mapping Big Tech's Influence on Journalism</title>
+<meta name="description" content="An interactive investigation into Big Tech and AI companies' funding relationships with journalism and media organizations.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08080d;--bg2:#0e0e16;--bg-panel:rgba(12,12,20,0.94);
+  --border:rgba(255,255,255,0.06);--border-h:rgba(255,255,255,0.14);
+  --text:#e8e6e1;--text-dim:#6a6862;--text-mid:#9a9890;
+  --accent:#ff3b30;--accent2:#ff6b5e;--accent-glow:rgba(255,59,48,0.1);
+  --openai:#10a37f;--google:#4285f4;--microsoft:#00bcf2;--meta:#0668E1;
+  --amazon:#ff9900;--perplexity:#20b2aa;--prorata:#e066ff;--ibm:#be95ff;
+  --mistral:#ff6f3c;--anthropic:#d4a574;--nvidia:#76b900;--x:#666;--tiktok:#ff0050;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+
+/* ════════ INTRO ════════ */
+.intro{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 1s,visibility 1s}
+.intro.gone{opacity:0;visibility:hidden;pointer-events:none}
+.intro-inner{text-align:center;max-width:560px;padding:24px}
+.intro-inner .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.intro-inner h1{font-family:'Instrument Serif',serif;font-size:52px;font-weight:400;line-height:1.1;margin-bottom:6px}
+.intro-inner h1 em{font-style:italic;color:var(--accent)}
+.intro-inner .sub{font-size:15px;line-height:1.7;color:var(--text-dim);margin-bottom:32px;max-width:440px;margin-left:auto;margin-right:auto}
+.stats-row{display:flex;gap:40px;justify-content:center;margin-bottom:36px}
+.stats-row .s{text-align:center}
+.stats-row .s .n{font-family:'Instrument Serif',serif;font-size:40px;color:var(--text)}
+.stats-row .s .l{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)}
+.enter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;padding:14px 44px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:all .3s;border-radius:2px}
+.enter-btn:hover{background:var(--accent);color:#fff}
+
+/* ════════ HEADER ════════ */
+header{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(8,8,13,.98) 0%,rgba(8,8,13,0) 100%);pointer-events:none}
+header>*{pointer-events:all}
+.logo{display:flex;align-items:baseline;gap:8px}
+.logo h1{font-family:'Instrument Serif',serif;font-size:20px;font-weight:400}
+.logo h1 em{font-style:italic;color:var(--accent)}
+.logo .tag{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);border:1px solid var(--border);padding:2px 7px;border-radius:2px}
+
+/* ════════ TABS ════════ */
+.tabs{display:flex;gap:2px;background:var(--bg-panel);border:1px solid var(--border);border-radius:4px;padding:2px;backdrop-filter:blur(20px)}
+.tab{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:3px;transition:all .2s;white-space:nowrap}
+.tab.active{background:rgba(255,255,255,0.06);color:var(--text)}
+.tab:hover:not(.active){color:var(--text-mid)}
+
+/* ════════ HEADER STATS ════════ */
+.h-stats{display:flex;gap:20px;align-items:center}
+.h-stat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim)}
+.h-stat strong{color:var(--text);font-weight:500}
+
+/* ════════ SEARCH ════════ */
+.search-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:101}
+.search-input{width:260px;padding:7px 12px 7px 28px;background:var(--bg-panel);border:1px solid var(--border);border-radius:18px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;backdrop-filter:blur(20px);transition:border-color .2s}
+.search-input::placeholder{color:var(--text-dim)}
+.search-input:focus{border-color:var(--border-h)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:11px}
+
+/* ════════ CANVAS / VIEWS ════════ */
+.view{position:fixed;inset:0;z-index:1;display:none}
+.view.active{display:block}
+canvas{width:100%;height:100%;cursor:grab}
+canvas:active{cursor:grabbing}
+
+/* ════════ TIMELINE ════════ */
+.timeline-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 18px;backdrop-filter:blur(20px)}
+.timeline-bar.hidden{display:none}
+.tl-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);white-space:nowrap}
+.tl-slider{-webkit-appearance:none;width:300px;height:3px;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+.tl-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg)}
+.tl-value{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);min-width:90px;text-align:center}
+.tl-play{width:28px;height:28px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s}
+.tl-play:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ════════ CONTROLS ════════ */
+.controls{position:fixed;left:20px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:4px}
+.ctrl-btn{width:32px;height:32px;border-radius:4px;background:var(--bg-panel);border:1px solid var(--border);color:var(--text-dim);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'JetBrains Mono',monospace;backdrop-filter:blur(20px)}
+.ctrl-btn:hover{border-color:var(--border-h);color:var(--text)}
+
+/* ════════ FILTER ════════ */
+.filter-panel{position:fixed;right:20px;top:60px;z-index:80;width:240px;max-height:calc(100vh - 90px);overflow-y:auto;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:14px;backdrop-filter:blur(20px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.filter-panel.hidden{display:none}
+.fp-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px}
+.fi{display:flex;align-items:center;gap:7px;padding:4px 0;cursor:pointer;transition:opacity .15s}
+.fi:hover{opacity:.8}
+.fi-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:all .2s}
+.fi.off .fi-dot{background:transparent!important;border:1.5px solid var(--text-dim)}
+.fi.off .fi-name{color:var(--text-dim);text-decoration:line-through}
+.fi-name{font-size:11px;color:var(--text)}
+.fi-ct{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim)}
+.filter-section{margin-bottom:14px}
+
+/* ════════ DETAIL ════════ */
+.detail{position:fixed;left:72px;bottom:20px;z-index:80;width:400px;max-height:52vh;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:18px;backdrop-filter:blur(20px);transform:translateY(16px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.detail.open{transform:translateY(0);opacity:1;pointer-events:all}
+.detail .close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;line-height:1}
+.detail .close:hover{color:var(--text)}
+.d-type{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.d-name{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;margin-bottom:12px;line-height:1.2}
+.d-summary{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.d-summary strong{color:var(--text);font-size:13px}
+.d-list{list-style:none}
+.d-list li{padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5}
+.d-list li:last-child{border-bottom:none}
+.d-prog{font-weight:600}
+.d-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);display:inline-block;margin-left:5px;padding:1px 5px;border:1px solid var(--border);border-radius:2px}
+.d-amt{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)}
+.d-desc{color:var(--text-dim);font-size:11px;margin-top:2px}
+.ai-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1px;padding:2px 5px;border-radius:2px;background:var(--accent-glow);color:var(--accent);margin-left:5px;vertical-align:middle}
+
+/* ════════ FLOW VIEW ════════ */
+#flowView{overflow:auto}
+.flow-container{width:100%;height:100%;position:relative}
+
+/* ════════ TOOLTIP ════════ */
+.tt{position:fixed;z-index:200;pointer-events:none;background:rgba(16,16,26,.96);border:1px solid var(--border);border-radius:4px;padding:7px 11px;font-size:12px;backdrop-filter:blur(10px);opacity:0;transition:opacity .12s;max-width:240px}
+.tt.on{opacity:1}
+.tt-name{font-weight:600;margin-bottom:1px}
+.tt-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim)}
+
+/* ════════ LEGEND ════════ */
+.legend{position:fixed;bottom:70px;right:20px;z-index:80;display:flex;flex-direction:column;gap:3px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 12px;backdrop-filter:blur(20px)}
+.legend.hidden{display:none}
+.lg-i{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:.5px}
+.lg-line{width:18px;height:2px;border-radius:1px}
+.lg-circ{width:7px;height:7px;border-radius:50%}
+
+/* ════════ ABOUT PANEL ════════ */
+.about-view{position:fixed;inset:0;z-index:90;background:var(--bg);overflow-y:auto;display:none;padding:80px 24px 60px}
+.about-view.active{display:block}
+.about-inner{max-width:680px;margin:0 auto}
+.about-inner h2{font-family:'Instrument Serif',serif;font-size:32px;font-weight:400;margin-bottom:8px}
+.about-inner h3{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-top:32px;margin-bottom:10px}
+.about-inner p{font-size:14px;line-height:1.8;color:var(--text-mid);margin-bottom:14px}
+.about-inner a{color:var(--accent);text-decoration:none}
+.about-inner a:hover{text-decoration:underline}
+.about-inner .cite{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);padding:8px 12px;border-left:2px solid var(--accent);margin:16px 0;line-height:1.6}
+
+/* ════════ SCROLLBAR ════════ */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+
+/* ════════ RESPONSIVE ════════ */
+@media(max-width:768px){
+  .filter-panel{display:none!important}
+  .legend{display:none!important}
+  .detail{left:12px;right:12px;width:auto;bottom:12px}
+  .timeline-bar{left:12px;right:12px;transform:none}
+  .tl-slider{width:120px}
+  .search-wrap{left:auto;right:16px;transform:none}
+  .search-input{width:180px}
+  .controls{left:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ INTRO ═══ -->
+<div class="intro" id="intro">
+<div class="intro-inner">
+  <div class="eyebrow">Interactive Investigation</div>
+  <h1>Media Capture<br><em>Watch</em></h1>
+  <p>An interactive map revealing the funding relationships between Big Tech, AI companies, and journalism — exposing the emerging architecture of media capture.</p>
+  <div class="stats-row">
+    <div class="s"><div class="n">65</div><div class="l">Deals Tracked</div></div>
+    <div class="s"><div class="n">13</div><div class="l">Companies</div></div>
+    <div class="s"><div class="n">$1B+</div><div class="l">Total Funding</div></div>
+    <div class="s"><div class="n">90%</div><div class="l">AI-Related (2025)</div></div>
+  </div>
+  <button class="enter-btn" onclick="document.getElementById('intro').classList.add('gone')">Explore the Network</button>
+</div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="logo"><h1>Media Capture <em>Watch</em></h1><span class="tag">2015–2025</span></div>
+  <div class="tabs" id="tabBar">
+    <button class="tab active" data-view="network">Network</button>
+    <button class="tab" data-view="flow">Flow</button>
+    <button class="tab" data-view="about">About</button>
+  </div>
+  <div class="h-stats">
+    <div class="h-stat"><strong id="hDeals">65</strong> deals</div>
+    <div class="h-stat"><strong id="hNodes">0</strong> nodes</div>
+  </div>
+</header>
+
+<!-- ═══ SEARCH ═══ -->
+<div class="search-wrap"><span class="search-icon">⌕</span><input class="search-input" id="searchInput" type="text" placeholder="Search entities…"></div>
+
+<!-- ═══ ZOOM ═══ -->
+<div class="controls" id="zoomControls">
+  <button class="ctrl-btn" id="zoomIn">+</button>
+  <button class="ctrl-btn" id="zoomOut">−</button>
+  <button class="ctrl-btn" id="zoomReset">⌂</button>
+</div>
+
+<!-- ═══ NETWORK VIEW ═══ -->
+<div class="view active" id="networkView"><canvas id="netCanvas"></canvas></div>
+
+<!-- ═══ FLOW VIEW ═══ -->
+<div class="view" id="flowView"><canvas id="flowCanvas"></canvas></div>
+
+<!-- ═══ ABOUT VIEW ═══ -->
+<div class="about-view" id="aboutView">
+<div class="about-inner">
+  <h2>About this project</h2>
+  <h3>What is Media Capture Watch?</h3>
+  <p>Media Capture Watch is an interactive data visualization that maps the funding relationships between Big Tech companies, AI startups, and journalism organizations worldwide. It aims to make visible the emerging architecture of influence that is reshaping the media landscape — what researchers call the "third wave" of enclosure, where platforms control not just content or data, but the very capacity for independent meaning-making.</p>
+
+  <h3>Why this matters</h3>
+  <p>Between 2018 and 2025, a handful of technology companies have committed over $1 billion in funding to news organizations through grants, content licensing deals, AI training partnerships, and revenue-sharing programs. While individual deals may serve legitimate purposes, the cumulative pattern reveals a structural dependency that raises profound questions about editorial independence.</p>
+  <p>Over 90% of deals struck in 2025 are explicitly AI-related — content licensing for large language models, chatbot training data, and AI search integration. This represents a fundamental shift from earlier philanthropy-style grants toward commercial extraction of journalism's core asset: its credibility and content.</p>
+
+  <h3>Methodology</h3>
+  <p>This dataset was compiled from public sources including press releases, regulatory filings, trade publications (Digiday, Press Gazette, Columbia Journalism Review), and academic research. Financial figures include both disclosed amounts and estimates from industry reporting. Where amounts are undisclosed, deals are included with qualitative descriptors.</p>
+  <div class="cite">Sources include: Digiday, Press Gazette, Columbia Journalism Review (Tow Center), CB Insights, AI Watch Dog, Lenfest Institute, American Journalism Project, and official company announcements.</div>
+
+  <h3>How to use</h3>
+  <p><strong>Network view:</strong> Explore the web of relationships. Click any node to see its deals. Filter by company. Drag the timeline to see how relationships evolved. Zoom and pan to navigate.</p>
+  <p><strong>Flow view:</strong> A Sankey-style visualization showing the volume and direction of funding from tech companies to media categories.</p>
+  <p><strong>Search:</strong> Find any entity — tech company, media organization, or program name.</p>
+
+  <h3>Credits & Contact</h3>
+  <p>Research and data: Nana Nwachukwu — Trinity College Dublin</p>
+  <p>Inspired by <a href="https://surveillancewatch.io" target="_blank">Surveillance Watch</a> (DAIR Institute).</p>
+  <p>If you have corrections, additions, or want to contribute data, please get in touch.</p>
+</div>
+</div>
+
+<!-- ═══ FILTER ═══ -->
+<div class="filter-panel" id="filterPanel"></div>
+
+<!-- ═══ DETAIL ═══ -->
+<div class="detail" id="detail"><button class="close" id="closeDetail">✕</button><div id="detailContent"></div></div>
+
+<!-- ═══ TIMELINE ═══ -->
+<div class="timeline-bar" id="timelineBar">
+  <span class="tl-label">Timeline</span>
+  <button class="tl-play" id="tlPlay">▶</button>
+  <input type="range" class="tl-slider" id="tlSlider" min="0" max="10" value="10" step="1">
+  <span class="tl-value" id="tlValue">All years</span>
+</div>
+
+<!-- ═══ LEGEND ═══ -->
+<div class="legend" id="legend">
+  <div class="lg-i"><div class="lg-line" style="background:var(--accent)"></div>AI-related deal</div>
+  <div class="lg-i"><div class="lg-line" style="background:rgba(255,255,255,0.12)"></div>Non-AI deal</div>
+  <div class="lg-i"><div class="lg-circ" style="background:var(--text)"></div>Tech company</div>
+  <div class="lg-i"><div class="lg-circ" style="border:1.5px solid var(--text-dim);background:transparent"></div>Media / Recipient</div>
+</div>
+
+<!-- ═══ TOOLTIP ═══ -->
+<div class="tt" id="tt"><div class="tt-name" id="ttN"></div><div class="tt-sub" id="ttS"></div></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA — Edit this section to update the visualization
+// ══════════════════════════════════════════════════════
+const COLORS={OpenAI:'#10a37f',Google:'#4285f4',Microsoft:'#00bcf2',Meta:'#0668E1',Amazon:'#ff9900',Perplexity:'#20b2aa','ProRata.ai':'#e066ff',IBM:'#be95ff',Mistral:'#ff6f3c',Anthropic:'#d4a574',Nvidia:'#76b900','X/Twitter':'#666','TikTok/ByteDance':'#ff0050'};
+
+const PERIODS=['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+
+// year: first year this deal became active
+const deals=[
+{c:"OpenAI",p:"Axios Local News Partnership",t:"Content License + Funding",a:"Undisclosed",y:2025,r:"Axios",d:"First time OpenAI funded newsroom creation",ai:1},
+{c:"OpenAI",p:"Schibsted Media Deal",t:"Content License",a:"Undisclosed",y:2025,r:"Schibsted Media",d:"Nordic news content for ChatGPT",ai:1},
+{c:"OpenAI",p:"The Guardian Deal",t:"Content License",a:"Undisclosed",y:2025,r:"The Guardian",d:"ChatGPT summaries with credit",ai:1},
+{c:"OpenAI",p:"Washington Post Deal",t:"Content License",a:"Undisclosed",y:2025,r:"Washington Post",d:"ChatGPT display with attribution",ai:1},
+{c:"OpenAI",p:"Bertelsmann Partnership",t:"Technology Partnership",a:"Undisclosed",y:2025,r:"Bertelsmann",d:"ChatGPT Enterprise implementation",ai:1},
+{c:"OpenAI",p:"Lenfest AI Collaborative R2",t:"Grant + Credits",a:"$10M total",y:2025,r:"ProPublica,Boston Globe,Dallas Morning News,Baltimore Banner",d:"Second round AI fellowship grants",ai:1},
+{c:"OpenAI",p:"American Journalism Project",t:"Grant + Credits",a:"$5M + $5M credits",y:2023,r:"American Journalism Project",d:"Created Product & AI Studio",ai:1},
+{c:"OpenAI",p:"Lenfest AI Collaborative R1",t:"Grant + Credits",a:"$5M",y:2024,r:"Chicago Public Media,Star Tribune,Newsday,Philadelphia Inquirer,Seattle Times",d:"Two-year AI fellows in newsrooms",ai:1},
+{c:"OpenAI",p:"WAN-IFRA AI Catalyst",t:"Training + Credits",a:"Undisclosed",y:2024,r:"WAN-IFRA",d:"128 newsrooms learning modules",ai:1},
+{c:"OpenAI",p:"News Corp Content Deal",t:"Content License",a:"$250M / 5 years",y:2024,r:"News Corp",d:"Largest disclosed AI-media deal",ai:1},
+{c:"OpenAI",p:"Axel Springer Deal",t:"Content License",a:">$10M/year",y:2023,r:"Axel Springer",d:"First major content licensing deal",ai:1},
+{c:"OpenAI",p:"Financial Times Deal",t:"Content License",a:"$5-10M/year",y:2024,r:"Financial Times",d:"Paywalled content access",ai:1},
+{c:"OpenAI",p:"Condé Nast Deal",t:"Content License",a:"Undisclosed",y:2024,r:"Condé Nast",d:"Multi-year content licensing",ai:1},
+{c:"OpenAI",p:"Vox Media Deal",t:"Content License",a:"Undisclosed",y:2024,r:"Vox Media",d:"Content licensing for ChatGPT",ai:1},
+{c:"OpenAI",p:"The Atlantic Deal",t:"Content License",a:"Undisclosed",y:2024,r:"The Atlantic",d:"Content licensing + Atlantic Labs",ai:1},
+{c:"OpenAI",p:"Time Magazine Deal",t:"Content License",a:"Undisclosed",y:2024,r:"Time",d:"100 years of archive access",ai:1},
+{c:"OpenAI",p:"Dotdash Meredith Deal",t:"Content License",a:">$16M",y:2024,r:"Dotdash Meredith",d:"Content licensing + D/Cipher",ai:1},
+{c:"OpenAI",p:"Hearst Deal",t:"Content License",a:"Undisclosed",y:2024,r:"Hearst",d:"20 magazines + 40 local newspapers",ai:1},
+{c:"OpenAI",p:"Le Monde / Prisa Media Deal",t:"Content License",a:"Undisclosed",y:2024,r:"Le Monde,Prisa Media",d:"French and Spanish content",ai:1},
+{c:"OpenAI",p:"Future plc Deal",t:"Content License",a:"Undisclosed",y:2024,r:"Future plc",d:"Content licensing + OpenAI tools",ai:1},
+{c:"OpenAI",p:"Associated Press Deal",t:"Content License",a:"Undisclosed",y:2023,r:"Associated Press",d:"First major news licensing deal",ai:1},
+{c:"Google",p:"AP Gemini Deal",t:"Content License",a:"Undisclosed",y:2025,r:"Associated Press",d:"Real-time news in Gemini",ai:1},
+{c:"Google",p:"AI Pilot Partnerships",t:"Content License",a:"Paid",y:2025,r:"Der Spiegel,El País,The Guardian,Times of India,Washington Post",d:"AI article overviews in Google News",ai:1},
+{c:"Google",p:"AJP Support",t:"Grant",a:"Undisclosed",y:2025,r:"American Journalism Project",d:"Sustainability accelerator",ai:0},
+{c:"Google",p:"Lenfest-GNI News Catalyst",t:"Grants",a:"$250K",y:2025,r:"13 news organizations",d:"Community listening experiments",ai:0},
+{c:"Google",p:"LMA Lab for Journalism",t:"Grants + Training",a:"Undisclosed",y:2025,r:"50 publishers",d:"Fundraising training",ai:0},
+{c:"Google",p:"GNI Growth Catalyst",t:"Grants",a:"$400K/org",y:2025,r:"US news organizations",d:"Geographic expansion grants",ai:0},
+{c:"Google",p:"JournalismAI Innovation 2025",t:"Grants",a:"$50K-$250K",y:2025,r:"12 publishers globally",d:"AI adoption for revenue growth",ai:1},
+{c:"Google",p:"Google News Initiative Total",t:"Multiple Programs",a:">$300M globally",y:2018,r:"7000+ news partners",d:"Training, tools, grants, relief",ai:0},
+{c:"Google",p:"Digital News Initiative",t:"Innovation Fund",a:"€150M",y:2015,r:"461 projects across Europe",d:"Pre-GNI European journalism fund",ai:0},
+{c:"Google",p:"News Equity Fund",t:"Grants",a:"$250K/newsroom",y:2022,r:"450+ newsrooms",d:"Underrepresented communities",ai:0},
+{c:"Google",p:"JournalismAI Innovation 2024",t:"Grants",a:"$50K-$250K",y:2024,r:"35 newsrooms",d:"AI adoption experimentation",ai:1},
+{c:"Google",p:"LION Publishers Program",t:"Grants",a:"$20K/newsroom",y:2022,r:"LION Publishers",d:"Sustainability audits",ai:0},
+{c:"Google",p:"INN Fundamentals Lab",t:"Grants",a:"$7.5M to INN",y:2023,r:"INN member newsrooms",d:"Training + funding",ai:0},
+{c:"Google",p:"Transformation Tech",t:"Grants + Training",a:"$7.5M/assoc",y:2023,r:"NNPA,NAHP,AAN",d:"Digital revenue capacity building",ai:0},
+{c:"Google",p:"YouTube Innovation Funding",t:"Grants",a:"$25M",y:2018,r:"Global newsrooms",d:"Video journalism capacity",ai:0},
+{c:"Google",p:"Google News Showcase",t:"Content License",a:"$1B committed",y:2020,r:"Hundreds of publishers",d:"Curated news panels",ai:0},
+{c:"Google",p:"Reddit Content Deal",t:"Content License",a:"~$60M/year",y:2024,r:"Reddit",d:"Content for AI training",ai:1},
+{c:"Microsoft",p:"AI Content Marketplace",t:"Content License",a:"Pay-per-use",y:2024,r:"People Inc.,USA Today Co.",d:"Content for Copilot",ai:1},
+{c:"Microsoft",p:"Lenfest AI Collaborative",t:"Grant + Credits",a:"$5M",y:2024,r:"Chicago Public Media,Star Tribune,Newsday,Philadelphia Inquirer,Seattle Times",d:"Joint program with OpenAI",ai:1},
+{c:"Microsoft",p:"Copilot Daily News",t:"Content License",a:"Paid",y:2024,r:"Financial Times,Reuters,Axel Springer,Hearst",d:"News summaries in Copilot",ai:1},
+{c:"Microsoft",p:"Axel Springer AI Partnership",t:"Technology Partnership",a:"Undisclosed",y:2024,r:"Axel Springer",d:"AI product development",ai:1},
+{c:"Meta",p:"Meta AI News Partnerships",t:"Content License",a:"Multi-year",y:2025,r:"CNN,Fox News,Le Monde,People Inc.,Daily Caller,Washington Examiner",d:"First Meta AI licensing deals",ai:1},
+{c:"Meta",p:"Reuters Content Partnership",t:"Content License",a:"Multi-year",y:2025,r:"Reuters",d:"Real-time news for Meta AI",ai:1},
+{c:"Meta",p:"Meta Journalism Project",t:"Multiple Programs",a:"$300M committed",y:2019,r:"564 US news organizations",d:"Training, grants, accelerators",ai:0},
+{c:"Meta",p:"COVID-19 News Relief",t:"Grants",a:"$16.5M (US)",y:2020,r:"Local newsrooms",d:"Emergency pandemic support",ai:0},
+{c:"Meta",p:"Accelerator Programs (US)",t:"Grants + Training",a:"$10.9M",y:2018,r:"150+ newsrooms",d:"Subscription training",ai:0},
+{c:"Meta",p:"Community News Project (UK)",t:"Grants + Training",a:"£17M",y:2018,r:"260+ regional journalists",d:"Reporter training — ENDED",ai:0},
+{c:"Meta",p:"Facebook News Tab",t:"Content License",a:"Multi-million/yr",y:2019,r:"Major US/UK publishers",d:"DISCONTINUED",ai:0},
+{c:"Meta",p:"Australian News Fund",t:"Grants",a:"AU$15M",y:2021,r:"Walkley Foundation",d:"Public interest journalism",ai:0},
+{c:"Mistral",p:"AFP Partnership",t:"Content License",a:"Undisclosed",y:2025,r:"Agence France-Presse",d:"First Mistral news deal",ai:1},
+{c:"Amazon",p:"NYT AI Deal",t:"Content License",a:"Multi-year",y:2025,r:"New York Times",d:"First NYT AI licensing deal",ai:1},
+{c:"Amazon",p:"Condé Nast Rufus Deal",t:"Content License",a:"Undisclosed",y:2025,r:"Condé Nast",d:"Content for Rufus AI assistant",ai:1},
+{c:"Amazon",p:"Hearst Rufus Deal",t:"Content License",a:"Undisclosed",y:2025,r:"Hearst",d:"Content for Rufus AI assistant",ai:1},
+{c:"Perplexity",p:"Publisher Revenue Share",t:"Revenue Share",a:"$42.5M pool",y:2024,r:"Time,Der Spiegel,Fortune,LA Times,The Independent,Gannett",d:"Revenue share when content cited",ai:1},
+{c:"Perplexity",p:"Comet Plus Subscription",t:"Revenue Share",a:"80% to publishers",y:2025,r:"Publisher partners",d:"Browser subscription revenue share",ai:1},
+{c:"Perplexity",p:"USA Today Co. Partnership",t:"Revenue Share",a:"Ad revenue share",y:2025,r:"USA Today Co.",d:"Perplexity search integration",ai:1},
+{c:"ProRata.ai",p:"Publisher Licensing Marketplace",t:"Revenue Share",a:"50% of sub revenue",y:2024,r:"FT,Axel Springer,The Atlantic,Fortune",d:"AI licensing marketplace",ai:1},
+{c:"ProRata.ai",p:"News/Media Alliance Partnership",t:"Revenue Share",a:"50% of Gist.AI rev",y:2025,r:"News/Media Alliance",d:"Trade association licensing",ai:1},
+{c:"IBM",p:"Notre Dame-IBM Tech Ethics Lab",t:"Grant Partner",a:"Part of Pulitzer funding",y:2021,r:"Pulitzer Center",d:"AI accountability journalism",ai:1},
+{c:"IBM",p:"Polaris Media Djinn Tool",t:"Technology Partnership",a:"Undisclosed",y:2023,r:"Polaris Media",d:"AI tool for local story ID",ai:1},
+];
+
+// ══════════════════════════════════════════════════════
+//  GRAPH CONSTRUCTION
+// ══════════════════════════════════════════════════════
+const nodes=[], edges=[], nodeMap={};
+let nid=0;
+
+const companies=[...new Set(deals.map(d=>d.c))];
+companies.forEach(name=>{
+  const nd={id:nid++,label:name,type:'company',color:COLORS[name]||'#888',conns:0,deals:[],radius:0,x:0,y:0,vx:0,vy:0,fx:null,fy:null,visible:true};
+  nodes.push(nd); nodeMap[name]=nd;
+});
+
+const recipMap={};
+deals.forEach(d=>{
+  d.r.split(',').map(s=>s.trim()).filter(s=>s.length>1).forEach(rName=>{
+    if(!recipMap[rName]){
+      const nd={id:nid++,label:rName,type:'recipient',color:'#e8e6e1',conns:0,deals:[],radius:0,x:0,y:0,vx:0,vy:0,fx:null,fy:null,visible:true};
+      nodes.push(nd); nodeMap[rName]=nd; recipMap[rName]=nd;
+    }
+    const src=nodeMap[d.c], tgt=recipMap[rName];
+    if(src&&tgt){src.conns++;tgt.conns++;src.deals.push(d);tgt.deals.push(d);
+      edges.push({source:src,target:tgt,deal:d,ai:d.ai,visible:true});
+    }
+  });
+});
+
+nodes.forEach(n=>{n.radius=n.type==='company'?Math.max(16,Math.min(42,11+n.conns*1.4)):Math.max(4,Math.min(18,3+n.conns*2.8))});
+
+// Initial layout — radial by company
+const CX=window.innerWidth/2, CY=window.innerHeight/2;
+const compNodes=nodes.filter(n=>n.type==='company');
+compNodes.forEach((n,i)=>{
+  const ang=(i/compNodes.length)*Math.PI*2-Math.PI/2;
+  const rad=Math.min(window.innerWidth,window.innerHeight)*0.26;
+  n.x=CX+Math.cos(ang)*rad; n.y=CY+Math.sin(ang)*rad;
+});
+nodes.filter(n=>n.type==='recipient').forEach(n=>{
+  const e=edges.find(e=>e.target===n||e.source===n);
+  if(e){const c=e.source.type==='company'?e.source:e.target;n.x=c.x+(Math.random()-.5)*220;n.y=c.y+(Math.random()-.5)*220;}
+  else{n.x=CX+(Math.random()-.5)*400;n.y=CY+(Math.random()-.5)*400;}
+});
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let activeComps=new Set(companies);
+let currentView='network';
+let timelineYear=2025; // max
+let selectedNode=null, hoveredNode=null, highlightSet=null;
+let camX=0,camY=0,camZ=1;
+let alpha=1;
+let playing=false, playTimer=null;
+
+// ══════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentView=tab.dataset.view;
+    document.querySelectorAll('.view,.about-view').forEach(v=>v.classList.remove('active'));
+    if(currentView==='network'){document.getElementById('networkView').classList.add('active');}
+    else if(currentView==='flow'){document.getElementById('flowView').classList.add('active');drawFlow();}
+    else if(currentView==='about'){document.getElementById('aboutView').classList.add('active');}
+    // Show/hide elements
+    const isNet=currentView==='network';
+    const isFlow=currentView==='flow';
+    document.getElementById('filterPanel').classList.toggle('hidden',!isNet&&!isFlow);
+    document.getElementById('legend').classList.toggle('hidden',!isNet);
+    document.getElementById('timelineBar').classList.toggle('hidden',!isNet);
+    document.getElementById('zoomControls').style.display=isNet?'flex':'none';
+  });
+});
+
+// ══════════════════════════════════════════════════════
+//  FILTERS
+// ══════════════════════════════════════════════════════
+function buildFilters(){
+  let h='<div class="filter-section"><div class="fp-title">Tech Companies</div>';
+  companies.forEach(c=>{
+    const ct=deals.filter(d=>d.c===c).length;
+    const col=COLORS[c]||'#888';
+    const on=activeComps.has(c);
+    h+=`<div class="fi ${on?'':'off'}" data-c="${c}"><div class="fi-dot" style="background:${col}"></div><span class="fi-name">${c}</span><span class="fi-ct">${ct}</span></div>`;
+  });
+  h+='</div><div class="filter-section"><div class="fp-title">Deal Types</div>';
+  const types=[...new Set(deals.map(d=>d.t))];
+  types.forEach(t=>{
+    const ct=deals.filter(d=>d.t===t).length;
+    h+=`<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:10px;color:var(--text-dim)"><span>${t}</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px">${ct}</span></div>`;
+  });
+  h+='</div>';
+  filterPanel.innerHTML=h;
+  filterPanel.querySelectorAll('.fi').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const c=el.dataset.c;
+      if(activeComps.has(c))activeComps.delete(c);else activeComps.add(c);
+      el.classList.toggle('off');
+      updateVis();
+    });
+  });
+}
+buildFilters();
+
+function updateVis(){
+  nodes.forEach(n=>{
+    if(n.type==='company'){n.visible=activeComps.has(n.label);}
+    else{n.visible=edges.some(e=>(e.source===n||e.target===n)&&activeComps.has(e.source.type==='company'?e.source.label:e.target.label)&&e.deal.y<=timelineYear);}
+  });
+  edges.forEach(e=>{
+    const comp=e.source.type==='company'?e.source:e.target;
+    e.visible=activeComps.has(comp.label)&&e.deal.y<=timelineYear;
+  });
+  const vis=deals.filter(d=>activeComps.has(d.c)&&d.y<=timelineYear);
+  document.getElementById('hDeals').textContent=vis.length;
+  document.getElementById('hNodes').textContent=nodes.filter(n=>n.visible).length;
+}
+updateVis();
+
+// ══════════════════════════════════════════════════════
+//  TIMELINE
+// ══════════════════════════════════════════════════════
+const tlSlider=document.getElementById('tlSlider');
+const tlValue=document.getElementById('tlValue');
+tlSlider.addEventListener('input',()=>{
+  const idx=parseInt(tlSlider.value);
+  timelineYear=parseInt(PERIODS[idx]);
+  tlValue.textContent=idx===PERIODS.length-1?'All (to '+PERIODS[idx]+')':PERIODS[idx];
+  updateVis(); alpha=0.5;
+});
+document.getElementById('tlPlay').addEventListener('click',()=>{
+  if(playing){clearInterval(playTimer);playing=false;document.getElementById('tlPlay').textContent='▶';return;}
+  playing=true;document.getElementById('tlPlay').textContent='■';
+  tlSlider.value=0;timelineYear=parseInt(PERIODS[0]);tlValue.textContent=PERIODS[0];updateVis();alpha=0.5;
+  playTimer=setInterval(()=>{
+    let v=parseInt(tlSlider.value)+1;
+    if(v>=PERIODS.length){clearInterval(playTimer);playing=false;document.getElementById('tlPlay').textContent='▶';return;}
+    tlSlider.value=v;timelineYear=parseInt(PERIODS[v]);
+    tlValue.textContent=v===PERIODS.length-1?'All (to '+PERIODS[v]+')':PERIODS[v];
+    updateVis();alpha=0.5;
+  },1200);
+});
+
+// ══════════════════════════════════════════════════════
+//  NETWORK CANVAS
+// ══════════════════════════════════════════════════════
+const nc=document.getElementById('netCanvas');
+const nctx=nc.getContext('2d');
+let W,H,dpr;
+
+function resize(){
+  dpr=window.devicePixelRatio||1;W=window.innerWidth;H=window.innerHeight;
+  nc.width=W*dpr;nc.height=H*dpr;nc.style.width=W+'px';nc.style.height=H+'px';
+  nctx.setTransform(dpr,0,0,dpr,0,0);
+  // flow canvas
+  const fc=document.getElementById('flowCanvas');
+  fc.width=W*dpr;fc.height=H*dpr;fc.style.width=W+'px';fc.style.height=H+'px';
+}
+resize();window.addEventListener('resize',resize);
+
+function s2w(sx,sy){return{x:(sx-W/2)/camZ+CX-camX,y:(sy-H/2)/camZ+CY-camY}}
+function w2s(wx,wy){return{x:(wx-CX+camX)*camZ+W/2,y:(wy-CY+camY)*camZ+H/2}}
+
+// Interaction
+let isDrag=false,dragSX,dragSY,dragCX,dragCY,dragNode=null;
+nc.addEventListener('mousedown',e=>{
+  const wp=s2w(e.clientX,e.clientY);
+  let hit=null;
+  for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.visible)continue;if(Math.hypot(n.x-wp.x,n.y-wp.y)<n.radius+5){hit=n;break;}}
+  if(hit){dragNode=hit;hit.fx=hit.x;hit.fy=hit.y;alpha=.3;}
+  else{isDrag=true;dragSX=e.clientX;dragSY=e.clientY;dragCX=camX;dragCY=camY;}
+});
+nc.addEventListener('mousemove',e=>{
+  if(dragNode){const wp=s2w(e.clientX,e.clientY);dragNode.fx=wp.x;dragNode.fy=wp.y;dragNode.x=wp.x;dragNode.y=wp.y;alpha=Math.max(alpha,.1);}
+  else if(isDrag){camX=dragCX+(e.clientX-dragSX)/camZ;camY=dragCY+(e.clientY-dragSY)/camZ;}
+  else{
+    const wp=s2w(e.clientX,e.clientY);
+    let hit=null;
+    for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.visible)continue;if(Math.hypot(n.x-wp.x,n.y-wp.y)<n.radius+5){hit=n;break;}}
+    hoveredNode=hit;
+    const tt=document.getElementById('tt');
+    if(hit){nc.style.cursor='pointer';tt.classList.add('on');tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+      document.getElementById('ttN').textContent=hit.label;
+      document.getElementById('ttS').textContent=hit.type==='company'?hit.conns+' connections':hit.deals.length+' deal'+(hit.deals.length>1?'s':'');
+    }else{nc.style.cursor='grab';tt.classList.remove('on');}
+  }
+});
+nc.addEventListener('mouseup',()=>{
+  if(dragNode){dragNode.fx=null;dragNode.fy=null;showDetail(dragNode);dragNode=null;}
+  isDrag=false;
+});
+nc.addEventListener('wheel',e=>{e.preventDefault();camZ=Math.max(.15,Math.min(5,camZ*(e.deltaY>0?.92:1.08)));},{passive:false});
+
+// Touch support
+nc.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    const t=e.touches[0];
+    const wp=s2w(t.clientX,t.clientY);
+    let hit=null;
+    for(let i=nodes.length-1;i>=0;i--){const n=nodes[i];if(!n.visible)continue;if(Math.hypot(n.x-wp.x,n.y-wp.y)<n.radius+10){hit=n;break;}}
+    if(hit){dragNode=hit;hit.fx=hit.x;hit.fy=hit.y;alpha=.3;}
+    else{isDrag=true;dragSX=t.clientX;dragSY=t.clientY;dragCX=camX;dragCY=camY;}
+  }
+},{passive:true});
+nc.addEventListener('touchmove',e=>{
+  if(e.touches.length===1){
+    const t=e.touches[0];
+    if(dragNode){const wp=s2w(t.clientX,t.clientY);dragNode.fx=wp.x;dragNode.fy=wp.y;dragNode.x=wp.x;dragNode.y=wp.y;alpha=Math.max(alpha,.1);}
+    else if(isDrag){camX=dragCX+(t.clientX-dragSX)/camZ;camY=dragCY+(t.clientY-dragSY)/camZ;}
+  }
+},{passive:true});
+nc.addEventListener('touchend',()=>{
+  if(dragNode){dragNode.fx=null;dragNode.fy=null;showDetail(dragNode);dragNode=null;}
+  isDrag=false;
+});
+
+document.getElementById('zoomIn').onclick=()=>camZ=Math.min(5,camZ*1.3);
+document.getElementById('zoomOut').onclick=()=>camZ=Math.max(.15,camZ/1.3);
+document.getElementById('zoomReset').onclick=()=>{camZ=1;camX=0;camY=0;};
+
+// ══════════════════════════════════════════════════════
+//  PHYSICS
+// ══════════════════════════════════════════════════════
+function simulate(){
+  alpha=Math.max(.001,alpha-.0015);
+  const visNodes=nodes.filter(n=>n.visible);
+  // Center gravity
+  visNodes.forEach(n=>{n.vx+=(CX-n.x)*.00025*alpha;n.vy+=(CY-n.y)*.00025*alpha;});
+  // Repulsion (Barnes-Hut would be better but brute force is fine for <200 nodes)
+  for(let i=0;i<visNodes.length;i++){
+    for(let j=i+1;j<visNodes.length;j++){
+      const a=visNodes[i],b=visNodes[j];
+      let dx=b.x-a.x,dy=b.y-a.y,dist=Math.sqrt(dx*dx+dy*dy)||1;
+      const minD=a.radius+b.radius+24;
+      const str=(a.type==='company'&&b.type==='company')?1200:250;
+      if(dist<minD*3.5){const f=str*alpha/(dist*dist);a.vx-=dx*f;a.vy-=dy*f;b.vx+=dx*f;b.vy+=dy*f;}
+    }
+  }
+  // Springs
+  edges.forEach(e=>{
+    if(!e.visible)return;
+    const a=e.source,b=e.target;
+    let dx=b.x-a.x,dy=b.y-a.y,dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const target=75+a.radius+b.radius;
+    const f=(dist-target)*.004*alpha;
+    const fx=dx/dist*f,fy=dy/dist*f;
+    a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
+  });
+  // Integrate
+  nodes.forEach(n=>{
+    if(n.fx!==null){n.x=n.fx;n.y=n.fy;n.vx=0;n.vy=0;return;}
+    n.vx*=.62;n.vy*=.62;n.x+=n.vx;n.y+=n.vy;
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER NETWORK
+// ══════════════════════════════════════════════════════
+let time=0;
+function drawNet(){
+  time+=.007;
+  simulate();
+  nctx.clearRect(0,0,W,H);
+
+  // Subtle grid
+  nctx.save();
+  nctx.translate(W/2,H/2);nctx.scale(camZ,camZ);nctx.translate(-CX+camX,-CY+camY);
+  const gridSize=100;
+  nctx.strokeStyle='rgba(255,255,255,0.015)';nctx.lineWidth=.5;
+  const startX=Math.floor((CX-camX-W/2/camZ)/gridSize)*gridSize;
+  const endX=startX+W/camZ+gridSize;
+  const startY=Math.floor((CY-camY-H/2/camZ)/gridSize)*gridSize;
+  const endY=startY+H/camZ+gridSize;
+  for(let x=startX;x<endX;x+=gridSize){nctx.beginPath();nctx.moveTo(x,startY);nctx.lineTo(x,endY);nctx.stroke();}
+  for(let y=startY;y<endY;y+=gridSize){nctx.beginPath();nctx.moveTo(startX,y);nctx.lineTo(endX,y);nctx.stroke();}
+
+  // Edges
+  edges.forEach(e=>{
+    if(!e.visible)return;
+    const a=e.source,b=e.target;
+    const isSel=selectedNode&&(a===selectedNode||b===selectedNode);
+    const isSearch=highlightSet&&(highlightSet.has(a.id)||highlightSet.has(b.id));
+    const dim=highlightSet&&!isSearch;
+    nctx.beginPath();nctx.moveTo(a.x,a.y);nctx.lineTo(b.x,b.y);
+    if(isSel){
+      const col=COLORS[e.source.type==='company'?e.source.label:e.target.label]||'#ff3b30';
+      nctx.strokeStyle=e.ai?col:'rgba(255,255,255,0.25)';nctx.lineWidth=2;nctx.globalAlpha=.85;
+    }else if(dim){nctx.strokeStyle='rgba(255,255,255,0.015)';nctx.lineWidth=.4;nctx.globalAlpha=.3;}
+    else{nctx.strokeStyle=e.ai?'rgba(255,59,48,0.1)':'rgba(255,255,255,0.03)';nctx.lineWidth=.6;nctx.globalAlpha=.5;}
+    nctx.stroke();nctx.globalAlpha=1;
+  });
+
+  // Animated particles on edges for selected node
+  if(selectedNode){
+    edges.forEach(e=>{
+      if(!e.visible)return;
+      if(e.source!==selectedNode&&e.target!==selectedNode)return;
+      const a=e.source,b=e.target;
+      const col=COLORS[a.type==='company'?a.label:b.label]||'#ff3b30';
+      const progress=(time*0.5+e.deal.y*0.1)%1;
+      const px=a.x+(b.x-a.x)*progress;
+      const py=a.y+(b.y-a.y)*progress;
+      nctx.beginPath();nctx.arc(px,py,2,0,Math.PI*2);
+      nctx.fillStyle=col;nctx.globalAlpha=.7;nctx.fill();nctx.globalAlpha=1;
+    });
+  }
+
+  // Nodes
+  nodes.forEach(n=>{
+    if(!n.visible)return;
+    const isSel=n===selectedNode;
+    const isHov=n===hoveredNode;
+    const isSearch=highlightSet&&highlightSet.has(n.id);
+    const isConn=selectedNode&&edges.some(e=>e.visible&&((e.source===selectedNode&&e.target===n)||(e.target===selectedNode&&e.source===n)));
+    const active=isSel||isHov||isSearch||isConn;
+    const dim=highlightSet&&!isSearch;
+    nctx.globalAlpha=dim?.1:1;
+
+    if(n.type==='company'){
+      const col=n.color;
+      // Glow
+      if(active){const g=nctx.createRadialGradient(n.x,n.y,n.radius*.4,n.x,n.y,n.radius*3.5);g.addColorStop(0,col+'35');g.addColorStop(1,col+'00');nctx.fillStyle=g;nctx.beginPath();nctx.arc(n.x,n.y,n.radius*3.5,0,Math.PI*2);nctx.fill();}
+      // Outer ring pulse
+      const pulse=1+Math.sin(time*2+n.id)*.05;
+      nctx.beginPath();nctx.arc(n.x,n.y,n.radius*pulse,0,Math.PI*2);nctx.fillStyle=col;nctx.fill();
+      // Inner cut
+      nctx.beginPath();nctx.arc(n.x,n.y,n.radius*.62,0,Math.PI*2);nctx.fillStyle='#08080d';nctx.fill();
+      // Core
+      nctx.beginPath();nctx.arc(n.x,n.y,n.radius*.32,0,Math.PI*2);nctx.fillStyle=col;nctx.fill();
+      // Label
+      nctx.fillStyle='#fff';nctx.font=`600 ${Math.max(9,n.radius*.36)}px 'DM Sans',sans-serif`;nctx.textAlign='center';
+      nctx.fillText(n.label,n.x,n.y+n.radius+13);
+    }else{
+      const connEdge=edges.find(e=>e.visible&&(e.source===n||e.target===n));
+      const col=connEdge?(connEdge.source.type==='company'?connEdge.source.color:connEdge.target.color):'#888';
+      if(active){nctx.beginPath();nctx.arc(n.x,n.y,n.radius+3.5,0,Math.PI*2);nctx.strokeStyle=col+'70';nctx.lineWidth=1.5;nctx.stroke();}
+      nctx.beginPath();nctx.arc(n.x,n.y,n.radius,0,Math.PI*2);
+      nctx.fillStyle=active?col+'50':'rgba(232,230,225,0.06)';nctx.fill();
+      nctx.strokeStyle=active?col:'rgba(232,230,225,0.12)';nctx.lineWidth=active?1.2:.5;nctx.stroke();
+      if(camZ>.5||active){
+        nctx.fillStyle=active?'#fff':'rgba(232,230,225,0.4)';
+        nctx.font=`${active?'500':'300'} ${Math.max(7,9/Math.max(camZ,.4))}px 'DM Sans',sans-serif`;
+        nctx.textAlign='center';nctx.fillText(n.label,n.x,n.y+n.radius+10);
+      }
+    }
+    nctx.globalAlpha=1;
+  });
+
+  nctx.restore();
+  if(currentView==='network')requestAnimationFrame(drawNet);
+}
+
+// ══════════════════════════════════════════════════════
+//  FLOW (SANKEY-STYLE) VIEW
+// ══════════════════════════════════════════════════════
+function drawFlow(){
+  const fc=document.getElementById('flowCanvas');
+  const fctx=fc.getContext('2d');
+  const fdpr=window.devicePixelRatio||1;
+  fctx.setTransform(fdpr,0,0,fdpr,0,0);
+  fctx.clearRect(0,0,W,H);
+
+  const visDeals=deals.filter(d=>activeComps.has(d.c)&&d.y<=timelineYear);
+  // Group: company → deal type → count
+  const compData={};
+  const allTypes=new Set();
+  visDeals.forEach(d=>{
+    if(!compData[d.c])compData[d.c]={};
+    if(!compData[d.c][d.t])compData[d.c][d.t]=0;
+    compData[d.c][d.t]++;
+    allTypes.add(d.t);
+  });
+
+  const sortedComps=Object.keys(compData).sort((a,b)=>{
+    const ta=Object.values(compData[a]).reduce((s,v)=>s+v,0);
+    const tb=Object.values(compData[b]).reduce((s,v)=>s+v,0);
+    return tb-ta;
+  });
+  const sortedTypes=[...allTypes].sort((a,b)=>{
+    const ta=visDeals.filter(d=>d.t===a).length;
+    const tb=visDeals.filter(d=>d.t===b).length;
+    return tb-ta;
+  });
+
+  if(sortedComps.length===0){
+    fctx.fillStyle='var(--text-dim)';fctx.font='14px "DM Sans",sans-serif';fctx.textAlign='center';
+    fctx.fillText('No deals match current filters',W/2,H/2);return;
+  }
+
+  const margin={top:100,bottom:60,left:60,right:60};
+  const colW=160;
+  const leftX=margin.left;
+  const rightX=W-margin.right-colW;
+  const usableH=H-margin.top-margin.bottom;
+  const gap=4;
+
+  // Compute heights
+  const totalDeals=visDeals.length;
+  const compHeights={};
+  let compY=margin.top;
+  sortedComps.forEach(c=>{
+    const ct=Object.values(compData[c]).reduce((s,v)=>s+v,0);
+    const h=Math.max(20,(ct/totalDeals)*usableH-gap);
+    compHeights[c]={y:compY,h};
+    compY+=h+gap;
+  });
+
+  const typeHeights={};
+  let typeY=margin.top;
+  sortedTypes.forEach(t=>{
+    const ct=visDeals.filter(d=>d.t===t).length;
+    const h=Math.max(16,(ct/totalDeals)*usableH-gap);
+    typeHeights[t]={y:typeY,h};
+    typeY+=h+gap;
+  });
+
+  // Draw flows
+  sortedComps.forEach(c=>{
+    const col=COLORS[c]||'#888';
+    const ch=compHeights[c];
+    const entries=Object.entries(compData[c]).sort((a,b)=>b[1]-a[1]);
+    let srcOffset=0;
+    entries.forEach(([t,ct])=>{
+      const th=typeHeights[t];
+      const bandH=(ct/totalDeals)*usableH;
+      // Curved band
+      fctx.beginPath();
+      const sy=ch.y+srcOffset;
+      const ey=th.y;
+      const sx=leftX+colW;
+      const ex=rightX;
+      const cpx=(sx+ex)/2;
+      fctx.moveTo(sx,sy);
+      fctx.bezierCurveTo(cpx,sy,cpx,ey,ex,ey);
+      fctx.lineTo(ex,ey+Math.max(4,bandH*.8));
+      fctx.bezierCurveTo(cpx,ey+Math.max(4,bandH*.8),cpx,sy+Math.max(4,bandH*.8),sx,sy+Math.max(4,bandH*.8));
+      fctx.closePath();
+      fctx.fillStyle=col+'18';fctx.fill();
+      fctx.strokeStyle=col+'30';fctx.lineWidth=.5;fctx.stroke();
+      srcOffset+=Math.max(4,bandH*.8)+1;
+
+      // Track type offset
+      typeHeights[t].y+=Math.max(4,bandH*.8)+1;
+    });
+  });
+
+  // Reset type positions for labels
+  typeY=margin.top;
+  sortedTypes.forEach(t=>{
+    const ct=visDeals.filter(d=>d.t===t).length;
+    const h=Math.max(16,(ct/totalDeals)*usableH-gap);
+    typeHeights[t]={y:typeY,h};
+    typeY+=h+gap;
+  });
+
+  // Company bars
+  sortedComps.forEach(c=>{
+    const col=COLORS[c]||'#888';
+    const ch=compHeights[c];
+    fctx.fillStyle=col;
+    fctx.beginPath();
+    const r=3;
+    fctx.roundRect(leftX,ch.y,colW,ch.h,r);
+    fctx.fill();
+    // Label
+    fctx.fillStyle='#fff';fctx.font="600 12px 'DM Sans',sans-serif";fctx.textAlign='left';
+    fctx.fillText(c,leftX+10,ch.y+ch.h/2+4);
+    // Count
+    const ct=Object.values(compData[c]).reduce((s,v)=>s+v,0);
+    fctx.fillStyle='rgba(255,255,255,0.6)';fctx.font="10px 'JetBrains Mono',monospace";
+    fctx.fillText(ct+' deals',leftX+colW-50,ch.y+ch.h/2+4);
+  });
+
+  // Type bars
+  sortedTypes.forEach(t=>{
+    const th=typeHeights[t];
+    const ct=visDeals.filter(d=>d.t===t).length;
+    fctx.fillStyle='rgba(232,230,225,0.08)';
+    fctx.beginPath();fctx.roundRect(rightX,th.y,colW,th.h,3);fctx.fill();
+    fctx.strokeStyle='rgba(232,230,225,0.12)';fctx.lineWidth=.5;fctx.stroke();
+    fctx.fillStyle='var(--text)';fctx.font="500 11px 'DM Sans',sans-serif";fctx.textAlign='left';
+    const label=t.length>22?t.slice(0,20)+'…':t;
+    fctx.fillText(label,rightX+8,th.y+th.h/2+4);
+    fctx.fillStyle='rgba(232,230,225,0.4)';fctx.font="10px 'JetBrains Mono',monospace";
+    fctx.fillText(ct+'',rightX+colW-24,th.y+th.h/2+4);
+  });
+
+  // Title
+  fctx.fillStyle='rgba(232,230,225,0.5)';fctx.font="10px 'JetBrains Mono',monospace";fctx.textAlign='center';fctx.letterSpacing='2px';
+  fctx.fillText('COMPANIES',leftX+colW/2,margin.top-20);
+  fctx.fillText('DEAL TYPES',rightX+colW/2,margin.top-20);
+}
+
+// ══════════════════════════════════════════════════════
+//  DETAIL PANEL
+// ══════════════════════════════════════════════════════
+function showDetail(node){
+  selectedNode=node;
+  const panel=document.getElementById('detail');
+  const content=document.getElementById('detailContent');
+  let h='';
+  if(node.type==='company'){
+    const col=COLORS[node.label]||'#888';
+    const cDeals=deals.filter(d=>d.c===node.label&&d.y<=timelineYear);
+    const aiCt=cDeals.filter(d=>d.ai).length;
+    h+=`<div class="d-type" style="color:${col}">Tech Company</div>`;
+    h+=`<div class="d-name">${node.label}</div>`;
+    h+=`<div class="d-summary">${cDeals.length} deals · <strong>${aiCt} AI-related</strong></div>`;
+    h+=`<ul class="d-list">`;
+    cDeals.forEach(d=>{
+      h+=`<li><span class="d-prog">${d.p}</span><span class="d-tag">${d.t}</span>${d.ai?'<span class="ai-badge">AI</span>':''}
+      <br><span class="d-amt">${d.a}</span> · ${PERIODS.find(p=>parseInt(p)===d.y)||d.y}
+      <div class="d-desc">${d.r}</div><div class="d-desc">${d.d}</div></li>`;
+    });
+    h+='</ul>';
+  }else{
+    const nDeals=edges.filter(e=>(e.target===node||e.source===node)&&e.visible).map(e=>e.deal);
+    const comps=[...new Set(nDeals.map(d=>d.c))];
+    h+=`<div class="d-type">Media / Recipient</div>`;
+    h+=`<div class="d-name">${node.label}</div>`;
+    h+=`<div class="d-summary">Connected to <strong>${comps.join(', ')}</strong></div>`;
+    h+=`<ul class="d-list">`;
+    nDeals.forEach(d=>{
+      const col=COLORS[d.c]||'#888';
+      h+=`<li><span class="d-prog" style="color:${col}">${d.c}</span><span class="d-tag">${d.t}</span>${d.ai?'<span class="ai-badge">AI</span>':''}
+      <br><span class="d-amt">${d.a}</span> · ${d.y}
+      <div class="d-desc">${d.p}</div><div class="d-desc">${d.d}</div></li>`;
+    });
+    h+='</ul>';
+  }
+  content.innerHTML=h;
+  panel.classList.add('open');
+}
+document.getElementById('closeDetail').onclick=()=>{document.getElementById('detail').classList.remove('open');selectedNode=null;};
+
+// ══════════════════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════════════════
+document.getElementById('searchInput').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  if(!q){highlightSet=null;return;}
+  highlightSet=new Set();
+  nodes.forEach(n=>{if(n.visible&&n.label.toLowerCase().includes(q))highlightSet.add(n.id);});
+  // Also search deal programs and recipients
+  deals.forEach(d=>{
+    if(d.p.toLowerCase().includes(q)||d.r.toLowerCase().includes(q)){
+      const cn=nodeMap[d.c];if(cn)highlightSet.add(cn.id);
+      d.r.split(',').map(s=>s.trim()).forEach(r=>{const rn=recipMap[r];if(rn)highlightSet.add(rn.id);});
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════
+//  KICK OFF
+// ══════════════════════════════════════════════════════
+requestAnimationFrame(drawNet);
+
+// Redraw flow when switching tabs
+const observer=new MutationObserver(()=>{
+  if(document.getElementById('flowView').classList.contains('active'))drawFlow();
+  if(document.getElementById('networkView').classList.contains('active')&&!drawNet.running){drawNet.running=true;requestAnimationFrame(drawNet);}
+});
+observer.observe(document.getElementById('flowView'),{attributes:true,attributeFilter:['class']});
+observer.observe(document.getElementById('networkView'),{attributes:true,attributeFilter:['class']});
+// restart network loop on tab switch
+const origDrawNet=drawNet;
+function loopNet(){origDrawNet();if(currentView==='network')requestAnimationFrame(loopNet);}
+// replace initial call
+cancelAnimationFrame(drawNet);requestAnimationFrame(loopNet);
+</script>
+</body>
+</html>
