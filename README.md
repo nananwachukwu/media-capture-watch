@@ -1,4 +1,4 @@
-# 🔴 Media Capture Watch
+# Media Capture Watch
 
 **An interactive map revealing Big Tech and AI companies' funding relationships with journalism and media organizations.**
 
@@ -97,6 +97,7 @@ Add both a color entry and deals:
 // In the deals array:
 {c:"NewCompany", p:"Program Name", t:"Content License", a:"$10M", y:2025, r:"Partner", d:"Description", ai:1},
 ```
+See [docs/UPDATING.md](docs/UPDATING.md) for detailed instructions.
 
 ---
 
