@@ -6,7 +6,7 @@
 <title>Media Capture Watch — Mapping Big Tech's Influence on Journalism</title>
 <meta name="description" content="An interactive investigation into Big Tech and AI companies' funding relationships with journalism and media organizations.">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Permanent+Marker&display=swap');
 
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -21,19 +21,117 @@
 html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
 
 /* ════════ INTRO ════════ */
-.intro{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 1s,visibility 1s}
-.intro.gone{opacity:0;visibility:hidden;pointer-events:none}
-.intro-inner{text-align:center;max-width:560px;padding:24px}
-.intro-inner .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
-.intro-inner h1{font-family:'Instrument Serif',serif;font-size:52px;font-weight:400;line-height:1.1;margin-bottom:6px}
-.intro-inner h1 em{font-style:italic;color:var(--accent)}
-.intro-inner .sub{font-size:15px;line-height:1.7;color:var(--text-dim);margin-bottom:32px;max-width:440px;margin-left:auto;margin-right:auto}
-.stats-row{display:flex;gap:40px;justify-content:center;margin-bottom:36px}
-.stats-row .s{text-align:center}
-.stats-row .s .n{font-family:'Instrument Serif',serif;font-size:40px;color:var(--text)}
-.stats-row .s .l{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)}
-.enter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;padding:14px 44px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:all .3s;border-radius:2px}
-.enter-btn:hover{background:var(--accent);color:#fff}
+intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg);
+  /* Added a subtle paper/grain texture */
+  background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1s, visibility 1s;
+}
+
+.intro.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.intro-inner { text-align: center; max-width: 800px; padding: 40px; }
+
+.intro-inner .eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent); /* Keep your existing red */
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.intro-inner h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(3.5rem, 8vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+  margin-bottom: 40px;
+}
+
+/* The Splattered Ink Effect */
+.intro-inner h1 em {
+  font-family: 'Permanent Marker', cursive;
+  font-style: normal;
+  color: var(--accent);
+  display: inline-block;
+  transform: rotate(-2deg);
+  margin-left: 10px;
+  position: relative;
+  text-shadow: 2px 2px 0px var(--bg), -1px -1px 0px var(--bg), 0 0 10px rgba(255, 59, 48, 0.3);
+}
+
+.intro-inner h1 em::after {
+  content: '';
+  position: absolute;
+  top: 10%; right: -25px;
+  width: 40px; height: 40px;
+  background-image: radial-gradient(var(--accent) 1px, transparent 1.5px);
+  background-size: 8px 8px;
+  opacity: 0.4;
+}
+
+.intro-inner .sub {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-mid);
+  margin-bottom: 50px;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-row {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-bottom: 60px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 40px;
+}
+
+.stats-row .s .n {
+  font-family: 'Instrument Serif', serif;
+  font-size: 48px;
+  color: #fff;
+}
+
+.stats-row .s .l {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+.enter-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 18px 50px;
+  border: 1px solid var(--text-dim); /* Swapped to white/grey for prestige look */
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all .4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.enter-btn:hover {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.2);
+}
 
 /* ════════ HEADER ════════ */
 header{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(8,8,13,.98) 0%,rgba(8,8,13,0) 100%);pointer-events:none}
@@ -163,18 +261,24 @@ canvas:active{cursor:grabbing}
 
 <!-- ═══ INTRO ═══ -->
 <div class="intro" id="intro">
-<div class="intro-inner">
-  <div class="eyebrow">Interactive Investigation</div>
-  <h1>Media Capture<br><em>Watch</em></h1>
-  <p>An interactive map revealing the funding relationships between Big Tech, AI companies, and journalism — exposing the emerging architecture of media capture.</p>
-  <div class="stats-row">
-    <div class="s"><div class="n">65</div><div class="l">Deals Tracked</div></div>
-    <div class="s"><div class="n">13</div><div class="l">Companies Tracked</div></div>
-    <div class="s"><div class="n">$1B+</div><div class="l">Total Funding</div></div>
-    <div class="s"><div class="n">90%</div><div class="l">AI-Related (2025)</div></div>
+  <div class="intro-inner">
+    <div class="eyebrow">Interactive Investigation</div>
+    <h1>Media Capture <em>Watch</em></h1>
+    <p class="sub">
+      An interactive map revealing the funding relationships between 
+      <strong>Big Tech, AI companies, and journalism</strong> — exposing the 
+      emerging architecture of media capture.
+    </p>
+    <div class="stats-row">
+      <div class="s"><div class="n">65</div><div class="l">Deals Tracked</div></div>
+      <div class="s"><div class="n">13</div><div class="l">Companies Tracked</div></div>
+      <div class="s"><div class="n">$1B+</div><div class="l">Total Funding</div></div>
+      <div class="s"><div class="n">90%</div><div class="l">AI-Related (2025)</div></div>
+    </div>
+    <button class="enter-btn" onclick="document.getElementById('intro').classList.add('gone')">
+      Explore the Network
+    </button>
   </div>
-  <button class="enter-btn" onclick="document.getElementById('intro').classList.add('gone')">Explore the Network</button>
-</div>
 </div>
 
 <!-- ═══ HEADER ═══ -->
