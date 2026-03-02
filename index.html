@@ -44,7 +44,8 @@ header>*{pointer-events:all}
 .logo .tag{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);border:1px solid var(--border);padding:2px 7px;border-radius:2px}
 
 /* ════════ TABS ════════ */
-.tabs{display:flex;gap:2px;background:var(--bg-panel);border:1px solid var(--border);border-radius:4px;padding:2px;backdrop-filter:blur(20px)}
+.tabs{display:flex;gap:2px;background:var(--bg-panel);border:1px solid var(--border-h);border-radius:4px;padding:2px;backdrop-filter:blur(20px);z-index:102;transition:all .3s}
+.tabs:hover{border-color:rgba(255,255,255,0.25);background:rgba(12,12,20,0.98)}
 .tab{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:3px;transition:all .2s;white-space:nowrap}
 .tab.active{background:rgba(255,255,255,0.06);color:var(--text)}
 .tab:hover:not(.active){color:var(--text-mid)}
@@ -55,7 +56,7 @@ header>*{pointer-events:all}
 .h-stat strong{color:var(--text);font-weight:500}
 
 /* ════════ SEARCH ════════ */
-.search-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:101}
+.search-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:99}
 .search-input{width:260px;padding:7px 12px 7px 28px;background:var(--bg-panel);border:1px solid var(--border);border-radius:18px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;backdrop-filter:blur(20px);transition:border-color .2s}
 .search-input::placeholder{color:var(--text-dim)}
 .search-input:focus{border-color:var(--border-h)}
@@ -83,7 +84,9 @@ canvas:active{cursor:grabbing}
 .ctrl-btn:hover{border-color:var(--border-h);color:var(--text)}
 
 /* ════════ FILTER ════════ */
-.filter-panel{position:fixed;right:20px;top:60px;z-index:80;width:240px;max-height:calc(100vh - 90px);overflow-y:auto;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:14px;backdrop-filter:blur(20px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent}
+.filter-panel{position:fixed;right:20px;top:60px;z-index:80;width:240px;max-height:calc(100vh - 90px);overflow-y:auto;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:14px;backdrop-filter:blur(20px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.08) transparent;transition:opacity .3s}
+.filter-panel.faded{opacity:0.3}
+.filter-panel.faded:hover{opacity:1}
 .filter-panel.hidden{display:none}
 .fp-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px}
 .fi{display:flex;align-items:center;gap:7px;padding:4px 0;cursor:pointer;transition:opacity .15s}
@@ -126,7 +129,7 @@ canvas:active{cursor:grabbing}
 /* ════════ LEGEND ════════ */
 .legend{position:fixed;bottom:70px;right:20px;z-index:80;display:flex;flex-direction:column;gap:3px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 12px;backdrop-filter:blur(20px)}
 .legend.hidden{display:none}
-.lg-i{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:.5px}
+.lg-i{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-mid);letter-spacing:.5px}
 .lg-line{width:18px;height:2px;border-radius:1px}
 .lg-circ{width:7px;height:7px;border-radius:50%}
 
@@ -403,6 +406,7 @@ document.querySelectorAll('.tab').forEach(tab=>{
     if(currentView==='network'){document.getElementById('networkView').classList.add('active');}
     else if(currentView==='flow'){document.getElementById('flowView').classList.add('active');drawFlow();}
     else if(currentView==='about'){document.getElementById('aboutView').classList.add('active');}
+    document.getElementById('filterPanel').classList.toggle('faded',currentView==='flow');
     // Show/hide elements
     const isNet=currentView==='network';
     const isFlow=currentView==='flow';
@@ -424,13 +428,7 @@ function buildFilters(){
     const on=activeComps.has(c);
     h+=`<div class="fi ${on?'':'off'}" data-c="${c}"><div class="fi-dot" style="background:${col}"></div><span class="fi-name">${c}</span><span class="fi-ct">${ct}</span></div>`;
   });
-  h+='</div><div class="filter-section"><div class="fp-title">Deal Types</div>';
-  const types=[...new Set(deals.map(d=>d.t))];
-  types.forEach(t=>{
-    const ct=deals.filter(d=>d.t===t).length;
-    h+=`<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:10px;color:var(--text-dim)"><span>${t}</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px">${ct}</span></div>`;
-  });
-  h+='</div>';
+  h+='</div><div class="filter-section"><div class="fp-title">Deal Types</div><div id="dealTypeList"></div>';
   filterPanel.innerHTML=h;
   filterPanel.querySelectorAll('.fi').forEach(el=>{
     el.addEventListener('click',()=>{
@@ -442,6 +440,7 @@ function buildFilters(){
   });
 }
 buildFilters();
+updateDealTypes();
 
 function updateVis(){
   nodes.forEach(n=>{
@@ -688,7 +687,7 @@ function drawNet(){
   });
 
   nctx.restore();
-  if(currentView==='network')requestAnimationFrame(drawNet);
+  if(currentView==='network'){if(alpha>0.002||selectedNode||hoveredNode||dragNode||isDrag)requestAnimationFrame(drawNet);else setTimeout(()=>requestAnimationFrame(drawNet),200);}
 }
 
 // ══════════════════════════════════════════════════════
@@ -871,8 +870,21 @@ function showDetail(node){
   }
   content.innerHTML=h;
   panel.classList.add('open');
+  updateDealTypes();
 }
-document.getElementById('closeDetail').onclick=()=>{document.getElementById('detail').classList.remove('open');selectedNode=null;};
+document.getElementById('closeDetail').onclick=()=>{document.getElementById('detail').classList.remove('open');selectedNode=null;updateDealTypes();};
+
+function updateDealTypes(){
+  const el=document.getElementById('dealTypeList');if(!el)return;
+  const src=selectedNode&&selectedNode.type==='company'?deals.filter(d=>d.c===selectedNode.label&&d.y<=timelineYear):deals.filter(d=>activeComps.has(d.c)&&d.y<=timelineYear);
+  const types=[...new Set(deals.map(d=>d.t))];
+  let h='';
+  types.forEach(t=>{
+    const ct=src.filter(d=>d.t===t).length;
+    if(ct>0)h+=`<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:10px;color:var(--text-dim)"><span>${t}</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px">${ct}</span></div>`;
+  });
+  el.innerHTML=h;
+}
 
 // ══════════════════════════════════════════════════════
 //  SEARCH
