@@ -6,7 +6,7 @@
 <title>Media Capture Watch — Mapping Big Tech's Influence on Journalism</title>
 <meta name="description" content="An interactive investigation into Big Tech and AI companies' funding relationships with journalism and media organizations.">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Permanent+Marker&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -21,117 +21,19 @@
 html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
 
 /* ════════ INTRO ════════ */
-intro {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: var(--bg);
-  /* Added a subtle paper/grain texture */
-  background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 1s, visibility 1s;
-}
-
-.intro.gone { opacity: 0; visibility: hidden; pointer-events: none; }
-
-.intro-inner { text-align: center; max-width: 800px; padding: 40px; }
-
-.intro-inner .eyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: var(--accent); /* Keep your existing red */
-  margin-bottom: 24px;
-  opacity: 0.8;
-}
-
-.intro-inner h1 {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(3.5rem, 8vw, 5.5rem);
-  font-weight: 400;
-  line-height: 1;
-  color: #fff;
-  margin-bottom: 40px;
-}
-
-/* The Splattered Ink Effect */
-.intro-inner h1 em {
-  font-family: 'Permanent Marker', cursive;
-  font-style: normal;
-  color: var(--accent);
-  display: inline-block;
-  transform: rotate(-2deg);
-  margin-left: 10px;
-  position: relative;
-  text-shadow: 2px 2px 0px var(--bg), -1px -1px 0px var(--bg), 0 0 10px rgba(255, 59, 48, 0.3);
-}
-
-.intro-inner h1 em::after {
-  content: '';
-  position: absolute;
-  top: 10%; right: -25px;
-  width: 40px; height: 40px;
-  background-image: radial-gradient(var(--accent) 1px, transparent 1.5px);
-  background-size: 8px 8px;
-  opacity: 0.4;
-}
-
-.intro-inner .sub {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: var(--text-mid);
-  margin-bottom: 50px;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.stats-row {
-  display: flex;
-  gap: 40px;
-  justify-content: center;
-  margin-bottom: 60px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  padding-top: 40px;
-}
-
-.stats-row .s .n {
-  font-family: 'Instrument Serif', serif;
-  font-size: 48px;
-  color: #fff;
-}
-
-.stats-row .s .l {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-top: 8px;
-}
-
-.enter-btn {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  padding: 18px 50px;
-  border: 1px solid var(--text-dim); /* Swapped to white/grey for prestige look */
-  background: transparent;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all .4s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.enter-btn:hover {
-  border-color: var(--accent);
-  color: #fff;
-  background: var(--accent);
-  box-shadow: 0 0 20px rgba(255, 59, 48, 0.2);
-}
+.intro{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity 1s,visibility 1s}
+.intro.gone{opacity:0;visibility:hidden;pointer-events:none}
+.intro-inner{text-align:center;max-width:560px;padding:24px}
+.intro-inner .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.intro-inner h1{font-family:'Instrument Serif',serif;font-size:52px;font-weight:400;line-height:1.1;margin-bottom:6px}
+.intro-inner h1 em{font-style:italic;color:var(--accent)}
+.intro-inner .sub{font-size:15px;line-height:1.7;color:var(--text-dim);margin-bottom:32px;max-width:440px;margin-left:auto;margin-right:auto}
+.stats-row{display:flex;gap:40px;justify-content:center;margin-bottom:36px}
+.stats-row .s{text-align:center}
+.stats-row .s .n{font-family:'Instrument Serif',serif;font-size:40px;color:var(--text)}
+.stats-row .s .l{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim)}
+.enter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;padding:14px 44px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:all .3s;border-radius:2px}
+.enter-btn:hover{background:var(--accent);color:#fff}
 
 /* ════════ HEADER ════════ */
 header{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(8,8,13,.98) 0%,rgba(8,8,13,0) 100%);pointer-events:none}
@@ -142,7 +44,7 @@ header>*{pointer-events:all}
 .logo .tag{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);border:1px solid var(--border);padding:2px 7px;border-radius:2px}
 
 /* ════════ TABS ════════ */
-.tabs{display:flex;gap:2px;background:var(--bg-panel);border:1px solid var(--border);border-radius:4px;padding:2px;backdrop-filter:blur(20px)z-index:102}
+.tabs{display:flex;gap:2px;background:var(--bg-panel);border:1px solid var(--border);border-radius:4px;padding:2px;backdrop-filter:blur(20px)}
 .tab{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-radius:3px;transition:all .2s;white-space:nowrap}
 .tab.active{background:rgba(255,255,255,0.06);color:var(--text)}
 .tab:hover:not(.active){color:var(--text-mid)}
@@ -153,7 +55,7 @@ header>*{pointer-events:all}
 .h-stat strong{color:var(--text);font-weight:500}
 
 /* ════════ SEARCH ════════ */
-.search-wrap{position:fixed;top:12px;right:20px;left:auto;transform:none;z-index:99}
+.search-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:101}
 .search-input{width:260px;padding:7px 12px 7px 28px;background:var(--bg-panel);border:1px solid var(--border);border-radius:18px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;backdrop-filter:blur(20px);transition:border-color .2s}
 .search-input::placeholder{color:var(--text-dim)}
 .search-input:focus{border-color:var(--border-h)}
@@ -212,7 +114,7 @@ canvas:active{cursor:grabbing}
 .ai-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1px;padding:2px 5px;border-radius:2px;background:var(--accent-glow);color:var(--accent);margin-left:5px;vertical-align:middle}
 
 /* ════════ FLOW VIEW ════════ */
-#flowView{overflow:autobackground:#222233}
+#flowView{overflow:auto}
 .flow-container{width:100%;height:100%;position:relative}
 
 /* ════════ TOOLTIP ════════ */
@@ -261,24 +163,18 @@ canvas:active{cursor:grabbing}
 
 <!-- ═══ INTRO ═══ -->
 <div class="intro" id="intro">
-  <div class="intro-inner">
-    <div class="eyebrow">Interactive Investigation</div>
-    <h1>Media Capture <em>Watch</em></h1>
-    <p class="sub">
-      An interactive map revealing the funding relationships between 
-      <strong>Big Tech, AI companies, and journalism</strong> — exposing the 
-      emerging architecture of media capture.
-    </p>
-    <div class="stats-row">
-      <div class="s"><div class="n">65</div><div class="l">Deals Tracked</div></div>
-      <div class="s"><div class="n">13</div><div class="l">Companies Tracked</div></div>
-      <div class="s"><div class="n">$1B+</div><div class="l">Total Funding</div></div>
-      <div class="s"><div class="n">90%</div><div class="l">AI-Related (2025)</div></div>
-    </div>
-    <button class="enter-btn" onclick="document.getElementById('intro').classList.add('gone')">
-      Explore the Network
-    </button>
+<div class="intro-inner">
+  <div class="eyebrow">Interactive Investigation</div>
+  <h1>Media Capture<br><em>Watch</em></h1>
+  <p>An interactive map revealing the funding relationships between Big Tech, AI companies, and journalism — exposing the emerging architecture of media capture.</p>
+  <div class="stats-row">
+    <div class="s"><div class="n">65</div><div class="l">Deals Tracked</div></div>
+    <div class="s"><div class="n">13</div><div class="l">Companies</div></div>
+    <div class="s"><div class="n">$1B+</div><div class="l">Total Funding</div></div>
+    <div class="s"><div class="n">90%</div><div class="l">AI-Related (2025)</div></div>
   </div>
+  <button class="enter-btn" onclick="document.getElementById('intro').classList.add('gone')">Explore the Network</button>
+</div>
 </div>
 
 <!-- ═══ HEADER ═══ -->
@@ -321,7 +217,6 @@ canvas:active{cursor:grabbing}
   <h3>Why this matters</h3>
   <p>Between 2018 and 2025, a handful of technology companies have committed over $1 billion in funding to news organizations through grants, content licensing deals, AI training partnerships, and revenue-sharing programs. While individual deals may serve legitimate purposes, the cumulative pattern reveals a structural dependency that raises profound questions about editorial independence.</p>
   <p>Over 90% of deals struck in 2025 are explicitly AI-related — content licensing for large language models, chatbot training data, and AI search integration. This represents a fundamental shift from earlier philanthropy-style grants toward commercial extraction of journalism's core asset: its credibility and content.</p>
-  <p><strong>Notable absences:</strong> Anthropic, Nvidia, X/Twitter, and TikTok/ByteDance were tracked but have no identified journalism funding partnerships.</p>
 
   <h3>Methodology</h3>
   <p>This dataset was compiled from public sources including press releases, regulatory filings, trade publications (Digiday, Press Gazette, Columbia Journalism Review), and academic research. Financial figures include both disclosed amounts and estimates from industry reporting. Where amounts are undisclosed, deals are included with qualitative descriptors.</p>
@@ -333,10 +228,10 @@ canvas:active{cursor:grabbing}
   <p><strong>Search:</strong> Find any entity — tech company, media organization, or program name.</p>
 
   <h3>Credits & Contact</h3>
-  <p>Research and data: Nana Nwachukwu — Trinity College Dublin<br>Part of ongoing research into AI audit ecosystems, media capture, and platform governance.</p>
-  <p>With thanks to Dick Blankvoort, Xeenarh Mohammed and the creator of Surveillance Watch, who encouraged me to write in HTML.<br>More thanks to Mercy Abang at UnbiastheNews.</p>
+  <p>Research and data: Nana Nwachukwu — Trinity College Dublin<br>
+  Part of ongoing research into AI audit ecosystems, media capture, and platform governance.</p>
   <p>Inspired by <a href="https://surveillancewatch.io" target="_blank">Surveillance Watch</a> (DAIR Institute).</p>
-  <p>If you have corrections, additions, or want to contribute data, please get in touch.</p>
+  <p>If you have corrections, additions, or want to contribute data, please <a href="https://github.com/nananwachukwu/media-capture-watch/issues" target="_blank">open an issue on GitHub</a> or get in touch.</p>
 </div>
 </div>
 
@@ -436,10 +331,6 @@ const deals=[
 {c:"ProRata.ai",p:"News/Media Alliance Partnership",t:"Revenue Share",a:"50% of Gist.AI rev",y:2025,r:"News/Media Alliance",d:"Trade association licensing",ai:1},
 {c:"IBM",p:"Notre Dame-IBM Tech Ethics Lab",t:"Grant Partner",a:"Part of Pulitzer funding",y:2021,r:"Pulitzer Center",d:"AI accountability journalism",ai:1},
 {c:"IBM",p:"Polaris Media Djinn Tool",t:"Technology Partnership",a:"Undisclosed",y:2023,r:"Polaris Media",d:"AI tool for local story ID",ai:1},
-{c:"Anthropic",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
-{c:"Nvidia",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
-{c:"X/xAI",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
-{c:"TikTok/ByteDance",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
 ];
 
 // ══════════════════════════════════════════════════════
