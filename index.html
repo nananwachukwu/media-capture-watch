@@ -56,7 +56,7 @@ header>*{pointer-events:all}
 .h-stat strong{color:var(--text);font-weight:500}
 
 /* ════════ SEARCH ════════ */
-.search-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:99}
+.search-wrap{position:fixed;top:14px;right:200px;z-index:99}
 .search-input{width:260px;padding:7px 12px 7px 28px;background:var(--bg-panel);border:1px solid var(--border);border-radius:18px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;backdrop-filter:blur(20px);transition:border-color .2s}
 .search-input::placeholder{color:var(--text-dim)}
 .search-input:focus{border-color:var(--border-h)}
@@ -397,6 +397,7 @@ let playing=false, playTimer=null;
 // ══════════════════════════════════════════════════════
 //  TABS
 // ══════════════════════════════════════════════════════
+document.getElementById('detail').classList.remove('open');selectedNode=null;
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
