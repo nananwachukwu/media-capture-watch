@@ -114,7 +114,7 @@ canvas:active{cursor:grabbing}
 .ai-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1px;padding:2px 5px;border-radius:2px;background:var(--accent-glow);color:var(--accent);margin-left:5px;vertical-align:middle}
 
 /* ════════ FLOW VIEW ════════ */
-#flowView{overflow:auto}
+#flowView{overflow:auto;background:#14141e}
 .flow-container{width:100%;height:100%;position:relative}
 
 /* ════════ TOOLTIP ════════ */
@@ -217,6 +217,7 @@ canvas:active{cursor:grabbing}
   <h3>Why this matters</h3>
   <p>Between 2018 and 2025, a handful of technology companies have committed over $1 billion in funding to news organizations through grants, content licensing deals, AI training partnerships, and revenue-sharing programs. While individual deals may serve legitimate purposes, the cumulative pattern reveals a structural dependency that raises profound questions about editorial independence.</p>
   <p>Over 90% of deals struck in 2025 are explicitly AI-related — content licensing for large language models, chatbot training data, and AI search integration. This represents a fundamental shift from earlier philanthropy-style grants toward commercial extraction of journalism's core asset: its credibility and content.</p>
+  <p><strong>Notable absences:</strong> Anthropic, Nvidia, X/Twitter, and TikTok/ByteDance were tracked but have no identified journalism funding partnerships — a finding that is itself significant.</p>
 
   <h3>Methodology</h3>
   <p>This dataset was compiled from public sources including press releases, regulatory filings, trade publications (Digiday, Press Gazette, Columbia Journalism Review), and academic research. Financial figures include both disclosed amounts and estimates from industry reporting. Where amounts are undisclosed, deals are included with qualitative descriptors.</p>
@@ -228,8 +229,8 @@ canvas:active{cursor:grabbing}
   <p><strong>Search:</strong> Find any entity — tech company, media organization, or program name.</p>
 
   <h3>Credits & Contact</h3>
-  <p>Research and data: Nana Nwachukwu — Trinity College Dublin<br>
-  Part of ongoing research into AI audit ecosystems, media capture, and platform governance.</p>
+  <p>Research and data: Nana Nwachukwu — Trinity College Dublin<br>Part of ongoing research into AI audit ecosystems, media capture, and platform governance.</p>
+  <p>With thanks to Dirk Blankvoort, Xeenarh Mohammed and the creator of Surveillance Watch, who encouraged me to write in HTML.<br>More thanks to Mercy Abang at UnbiastheNews.</p>
   <p>Inspired by <a href="https://surveillancewatch.io" target="_blank">Surveillance Watch</a> (DAIR Institute).</p>
   <p>If you have corrections, additions, or want to contribute data, please <a href="https://github.com/nananwachukwu/media-capture-watch/issues" target="_blank">open an issue on GitHub</a> or get in touch.</p>
 </div>
@@ -331,6 +332,10 @@ const deals=[
 {c:"ProRata.ai",p:"News/Media Alliance Partnership",t:"Revenue Share",a:"50% of Gist.AI rev",y:2025,r:"News/Media Alliance",d:"Trade association licensing",ai:1},
 {c:"IBM",p:"Notre Dame-IBM Tech Ethics Lab",t:"Grant Partner",a:"Part of Pulitzer funding",y:2021,r:"Pulitzer Center",d:"AI accountability journalism",ai:1},
 {c:"IBM",p:"Polaris Media Djinn Tool",t:"Technology Partnership",a:"Undisclosed",y:2023,r:"Polaris Media",d:"AI tool for local story ID",ai:1},
+{c:"Anthropic",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
+{c:"Nvidia",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
+{c:"X/Twitter",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
+{c:"TikTok/ByteDance",p:"No identified partnerships",t:"None",a:"N/A",y:2025,r:"None",d:"Tracked — no journalism deals found",ai:0},
 ];
 
 // ══════════════════════════════════════════════════════
